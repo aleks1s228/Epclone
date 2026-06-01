@@ -1,0 +1,55 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Autorizācija - Epclone{% endblock %}
+
+{% block body %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-5">
+            <div class="card shadow-sm p-4">
+                <h1 class="h3 mb-4 text-center fw-bold">Ienākt sistēmā</h1>
+
+                <form method="post">
+                    {% if error %}
+                        <div class="alert alert-danger">{{ error.messageKey|trans(error.messageData, 'security') }}</div>
+                    {% endif %}
+
+                    {% if app.user %}
+                        <div class="alert alert-info mb-3">
+                            Jūs esat pieteicies kā <strong>{{ app.user.userIdentifier }}</strong>, 
+                            <a href="{{ logout_path() }}" class="alert-link ms-1">Iziet</a>
+                        </div>
+                    {% endif %}
+
+                    <div class="mb-3">
+                        <label for="inputEmail" class="form-label">E-pasts</label>
+                        <input type="email" value="{{ last_username }}" name="email" id="inputEmail" class="form-control" autocomplete="email" required autofocus>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="inputPassword" class="form-label">Parole</label>
+                        <input type="password" name="password" id="inputPassword" class="form-control" autocomplete="current-password" required>
+                    </div>
+
+                    <input type="hidden" name="_csrf_token" data-controller="csrf-protection" value="{{ csrf_token('authenticate') }}">
+
+                    <div class="form-check mb-3">
+                        <input type="checkbox" name="_remember_me" id="rememberMe" class="form-check-input">
+                        <label class="form-check-label" for="rememberMe">
+                            Atcerēties mani
+                        </label>
+                    </div>
+
+                    <button class="btn btn-primary w-100 py-2 mt-2" type="submit">
+                        Ienākt
+                    </button>
+                </form>
+
+                <div class="text-center mt-3">
+                    <small class="text-muted">Vēl neesat reģistrējies? <a href="{{ path('app_register') }}">Izveidot kontu</a></small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

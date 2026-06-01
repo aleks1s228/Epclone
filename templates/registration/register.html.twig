@@ -1,0 +1,74 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Reģistrācija - Epclone{% endblock %}
+
+{% block body %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card shadow-sm p-4">
+                <h1 class="h3 mb-4 text-center fw-bold">Izveidot kontu</h1>
+
+                {% for flash_error in app.flashes('verify_email_error') %}
+                    <div class="alert alert-danger" role="alert">{{ flash_error }}</div>
+                {% endfor %}
+
+                {{ form_errors(registrationForm) }}
+
+                {{ form_start(registrationForm) }}
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            {{ form_row(registrationForm.firstName, {
+                                'label': 'Vārds',
+                                'attr': {'class': 'form-control'}
+                            }) }}
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            {{ form_row(registrationForm.lastName, {
+                                'label': 'Uzvārds',
+                                'attr': {'class': 'form-control'}
+                            }) }}
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        {{ form_row(registrationForm.email, {
+                            'label': 'E-pasts',
+                            'attr': {'class': 'form-control'}
+                        }) }}
+                    </div>
+
+                    <div class="mb-3">
+                        {{ form_row(registrationForm.plainPassword, {
+                            'label': 'Parole',
+                            'attr': {'class': 'form-control'}
+                        }) }}
+                    </div>
+
+                    <div class="mb-3">
+                        {{ form_row(registrationForm.phone, {
+                            'label': 'Tālrunis',
+                            'attr': {'class': 'form-control'}
+                        }) }}
+                    </div>
+
+                    <div class="form-check mb-4">
+                        {{ form_widget(registrationForm.agreeTerms, {
+                            'attr': {'class': 'form-check-input'}
+                        }) }}
+                        {{ form_label(registrationForm.agreeTerms, 'Piekrītu noteikumiem un nosacījumiem', {
+                            'label_attr': {'class': 'form-check-label'}
+                        }) }}
+                    </div>
+
+                    <button type="submit" class="btn btn-primary w-100 py-2">Reģistrēties</button>
+                {{ form_end(registrationForm) }}
+                
+                <div class="text-center mt-3">
+                    <small class="text-muted">Jau esat reģistrējies? <a href="/login">Ienākt</a></small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,200 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Grozs - Epclone{% endblock %}
+
+{% block body %}
+<div class="container mt-4">
+    <h2 class="mb-4">Iepirkumu grozs</h2>
+
+    {% for label, messages in app.flashes %}
+        {% for message in messages %}
+            <div class="alert alert-{{ label }} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        {% endfor %}
+    {% endfor %}
+
+    {% if cart is empty %}
+        <div class="alert alert-info">Jūsu grozs ir tukšs. <a href="{{ path('app_catalog') }}">Atgriezties uz katalogu</a></div>
+    {% else %}
+        <div class="row">
+            <div class="col-md-8">
+                <div class="card shadow-sm p-3 mb-4">
+                    <table class="table align-middle">
+                        <thead>
+                            <tr>
+                                <th>Prece</th>
+                                <th>Skaits</th>
+                                <th>Cena</th>
+                                <th>Kopā</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for item in cart %}
+                                <tr>
+                                    <td>
+                                        <strong>{{ item.product.name }}</strong><br>
+                                        <small class="text-muted">Kods: {{ item.product.uniqueCode }}</small>
+                                    </td>
+                                    <td>{{ item.quantity }} x</td>
+                                    <td>{{ item.product.price }} €</td>
+                                    <td>{{ item.subtotal }} €</td>
+                                    <td>
+                                        <a href="{{ path('app_cart_remove', { id: item.product.id }) }}" class="btn btn-sm btn-outline-danger">&times;</a>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                    <div class="text-end fw-bold fs-5">
+                        Kopējā summa: <span class="text-primary">{{ total }} €</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <div class="card shadow-sm p-3">
+                    <h5>Pasūtījuma noformēšana</h5>
+                    <hr>
+                    <form action="{{ path('app_cart_checkout') }}" method="post" id="checkout-form" onsubmit="return validateCheckout()">
+                        <div class="mb-3">
+                            <label class="form-label">Vārds, Uzvārds</label>
+                            <input type="text" name="name" class="form-control" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">E-pasts</label>
+                            <input type="email" name="email" class="form-control" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Tālrunis</label>
+                            <input type="text" name="phone" class="form-control" required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Piegādes veids</label>
+                            {# ИСПРАВЛЕНО: Добавлен onchange атрибут для мгновенной реакции скрипта #}
+                            <select id="delivery-method" name="delivery_method" class="form-select" required onchange="handleDeliveryChange(this)">
+                                <option value="">Izvēlieties piegādātāju...</option>
+                                <option value="store">Saņemt veikalā (Bezmaksas)</option>
+                                <option value="omniva">Omniva pakomāts</option>
+                                <option value="dpd">DPD Pickup punkts</option>
+                            </select>
+                        </div>
+
+                        {# Блок адреса скрыт по умолчанию #}
+                        <div class="mb-3" id="address-container" style="display: none;">
+                            <label class="form-label" id="address-label">Atrašanās vieta</label>
+                            <select id="delivery-address" name="delivery_address" class="form-select">
+                                <option value="">Lūdzu, izvēlieties...</option>
+                            </select>
+                        </div>
+
+                        <button type="submit" class="btn btn-success w-100 mt-2">Turpināt uz apmaksu</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+</div>
+
+<script>
+    function handleDeliveryChange(selectElement) {
+        const provider = selectElement.value;
+        const addressContainer = document.getElementById('address-container');
+        const deliveryAddress = document.getElementById('delivery-address');
+        const addressLabel = document.getElementById('address-label');
+
+        if (!addressContainer || !deliveryAddress || !addressLabel) return;
+
+        if (!provider) {
+            addressContainer.style.display = 'none';
+            return;
+        }
+
+        addressContainer.style.display = 'block';
+
+        if (provider === 'store') {
+            addressLabel.innerText = 'Veikala adrese';
+            deliveryAddress.innerHTML = '<option value="Mūsu galvenais veikals (Rīga, Brīvības iela 1)">Mūsu galvenais veikals (Rīga, Brīvības iela 1)</option>';
+            return;
+        }
+
+        addressLabel.innerText = provider.toUpperCase() + ' pakomāts / punkts';
+        deliveryAddress.innerHTML = '<option value="">Ielādē adreses...</option>';
+
+        if (provider === 'omniva') {
+            // Запрос всех пакоматов Omniva в Латвии
+            fetch('https://www.omniva.lv/locations.json')
+                .then(response => response.json())
+                .then(data => {
+                    const lvPoints = data.filter(item => item.A0_NAME === 'LV');
+                    let html = '<option value="">Izvēlieties Omniva pakomātu...</option>';
+                    lvPoints.forEach(point => {
+                        const fullName = `${point.A1_NAME}, ${point.NAME} (${point.A2_NAME} ${point.A5_NAME || ''})`;
+                        html += `<option value="${fullName}">${fullName}</option>`;
+                    });
+                    deliveryAddress.innerHTML = html;
+                })
+                .catch(error => {
+                    console.error('Omniva error:', error);
+                    deliveryAddress.innerHTML = '<option value="">Kļūda, ielādējot Omniva adreses</option>';
+                });
+
+        } else if (provider === 'dpd') {
+            // Запрос всех пунктов DPD в Латвии (официальный CSV файл)
+            fetch('https://support.dpd.lv/pickup-punti-csv.php')
+                .then(response => response.text())
+                .then(text => {
+                    // Разбиваем CSV по строкам
+                    const lines = text.split('\n');
+                    let html = '<option value="">Izvēlieties DPD punktu...</option>';
+                    
+                    lines.forEach((line, index) => {
+                        // Пропускаем заголовок таблицы и пустые строки
+                        if (index === 0 || !line.trim()) return;
+                        
+                        // Парсим строку CSV (разделение по запятой или точке с запятой)
+                        const columns = line.split(';');
+                        if (columns.length >= 4) {
+                            const name = columns[1] ? columns[1].replace(/"/g, '').trim() : '';
+                            const street = columns[2] ? columns[2].replace(/"/g, '').trim() : '';
+                            const city = columns[3] ? columns[3].replace(/"/g, '').trim() : '';
+                            
+                            if (name && city) {
+                                const fullName = `${city}, ${name} (${street})`;
+                                html += `<option value="${fullName}">${fullName}</option>`;
+                            }
+                        }
+                    });
+                    deliveryAddress.innerHTML = html;
+                })
+                .catch(error => {
+                    console.error('DPD error:', error);
+                    deliveryAddress.innerHTML = '<option value="">Kļūda, ielādējot DPD adreses</option>';
+                });
+        }
+    }
+
+    function validateCheckout() {
+        const addressContainer = document.getElementById('address-container');
+        const addressSelect = document.getElementById('delivery-address');
+        
+        if (addressContainer && addressContainer.style.display !== 'none') {
+            if (!addressSelect || !addressSelect.value || addressSelect.value.trim() === "") {
+                alert('Lūdzu, izvēlieties adresi vai pakomātu!');
+                return false;
+            }
+        }
+        return true;
+    }
+
+    window.addEventListener('pageshow', function(event) {
+        const deliveryMethod = document.getElementById('delivery-method');
+        if (deliveryMethod && deliveryMethod.value) {
+            handleDeliveryChange(deliveryMethod);
+        }
+    });
+</script>
+{% endblock %}

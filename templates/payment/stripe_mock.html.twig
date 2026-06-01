@@ -1,0 +1,27 @@
+{% extends 'base.html.twig' %}
+
+{% block body %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card border-primary shadow">
+                <div class="card-header bg-primary text-white text-center">
+                    <h4>Stripe Payment Gateway (Sandbox)</h4>
+                </div>
+                <div class="card-body">
+                    <p><strong>Pasūtījuma ID:</strong> #{{ order.id }}</p>
+                    <p><strong>Kopējā summa:</strong> {{ order.totalPrice }} EUR</p>
+                    <p><strong>Piegāde:</strong> {{ order.deliveryMethod|upper }} ({{ order.deliveryAddress }})</p>
+                    <hr>
+                    <div class="alert alert-info text-center" style="font-size: 0.9rem;">
+                        Šī ir maksājumu sistēmas simulācija. Noklikšķiniet uz pogas, lai emulētu veiksmīgu transakciju caur Stripe API.
+                    </div>
+                    <form action="{{ path('app_payment_process', {'id': order.id}) }}" method="post">
+                        <button type="submit" class="btn btn-primary w-100 py-2">Maksāt {{ order.totalPrice }} EUR</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

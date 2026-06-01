@@ -1,0 +1,20 @@
+services:
+  mailpit:
+    image: axllent/mailpit
+    container_name: symfony_mailpit
+    ports:
+      - "1025:1025"
+      - "8025:8025"
+  database:
+    image: mysql:8.0
+    container_name: symfony_mysql_db
+    environment:
+      MYSQL_ROOT_PASSWORD: root_password
+      MYSQL_DATABASE: my_project_db
+    ports:
+      - "3306:3306"
+    volumes:
+      - db_data:/var/lib/mysql
+
+volumes:
+  db_data:

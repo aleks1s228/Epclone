@@ -1,0 +1,21 @@
+{% extends 'base.html.twig' %}
+
+{% block body %}
+<div class="container mt-5 text-center">
+    <div class="card p-5 shadow-sm mx-auto" style="max-width: 600px;">
+        <div class="text-success mb-3">
+            <i class="fas fa-check-circle fa-4x"></i>
+        </div>
+        <h2 class="text-success">Maksājums veiksmīgs!</h2>
+        <p class="lead mt-3">Paldies par pirkumu. Jūsu pasūtījums <strong>#{{ order.id }}</strong> ir reģistrēts.</p>
+        <hr>
+        <div class="text-start bg-light p-3 rounded">
+            <p class="mb-1"><strong>Klients:</strong> {{ order.customerEmail }}</p>
+            <p class="mb-1"><strong>Tālrunis:</strong> {{ order.deliveryPhone }}</p>
+            <p class="mb-1"><strong>Piegāde:</strong> {{ order.deliveryMethod|upper }} — {{ order.deliveryAddress }}</p>
+            <p class="mb-0"><strong>Statuss:</strong> <span class="badge bg-success">{{ order.status.value|upper }}</span></p>
+        </div>
+        <a href="{{ path('app_cart') }}" class="btn btn-outline-primary mt-4">Atgriezties veikalā</a>
+    </div>
+</div>
+{% endblock %}
