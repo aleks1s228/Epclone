@@ -28,7 +28,8 @@ COPY . .
 
 # Шаг 7: Устанавливаем зависимости PHP без девелоперских пакетов и оптимизируем автозагрузчик
 ENV COMPOSER_ALLOW_SUPERUSER=1
-RUN composer install --no-dev --optimize-autoloader
+ENV APP_ENV=prod
+RUN composer install --no-dev --optimize-autoloader --no-scripts
 
 # Шаг 8: Выставляем правильные права на папки кэша и логов, чтобы Symfony могла в них писать
 RUN chown -R www-data:www-data /var/www/html/var
