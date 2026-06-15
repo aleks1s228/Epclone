@@ -29,6 +29,7 @@ COPY . .
 # Шаг 7: Устанавливаем зависимости PHP без девелоперских пакетов и оптимизируем автозагрузчик
 ENV COMPOSER_ALLOW_SUPERUSER=1
 ENV APP_ENV=prod
+ENV APP_SECRET=Def4ultSecr3tStrt1ngForProdDuclt10n
 RUN composer install --no-dev --optimize-autoloader --no-scripts
 
 # Шаг 8: Выставляем правильные права на папки кэша и логов, чтобы Symfony могла в них писать
