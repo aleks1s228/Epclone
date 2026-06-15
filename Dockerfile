@@ -39,6 +39,8 @@ ENV APP_SECRET=Def4ultSecr3tStrt1ngForProdDuclt10n
 ENV DATABASE_URL=sqlite:///%kernel.project_dir%/var/data.db
 RUN composer install --no-dev --optimize-autoloader --no-scripts
 
+RUN php bin/console importmap:install
+
 # Шаг 9: Создаем папку var, выставляем права владельца www-data и полные права на запись кэша
 RUN mkdir -p /var/www/html/var \
     && chown -R www-data:www-data /var/www/html/var \
