@@ -4,47 +4,103 @@
 
 {% block body %}
 <div class="container mt-4">
+    {# Навигация назад #}
     <a href="{{ path('app_catalog') }}" class="btn btn-sm btn-outline-secondary mb-4">← Atpakaļ uz katalogu</a>
 
-    <div class="row">
+    {# Первый экран: Фото + Покупка #}
+    <div class="row mb-5">
+        {# Левая колонка: Изображение товара #}
         <div class="col-md-6 mb-4">
-            <div class="card p-4 text-center shadow-sm">
+            <div class="card p-4 text-center shadow-sm h-100 justify-content-center bg-white border-0">
                 {% if product.image %}
-                    <img src="{{ asset('uploads/images/' ~ product.image) }}" class="img-fluid" alt="{{ product.name }}" style="max-height: 400px; object-fit: contain;">
+                    <img src="{{ asset('uploads/images/' ~ product.image) }}" class="img-fluid rounded" alt="{{ product.name }}" style="max-height: 450px; object-fit: contain;">
                 {% else %}
-                    <div class="bg-light text-center py-5 text-muted" style="height: 300px; line-height: 200px;">Nav attēla</div>
+                    <div class="bg-light text-center py-5 text-muted rounded" style="min-height: 350px; display: flex; align-items: center; justify-content: center;">
+                        <div>
+                            <i class="fa fa-image fa-3x mb-3 text-secondary"></i>
+                            <div>Nav attēla</div>
+                        </div>
+                    </div>
                 {% endif %}
             </div>
         </div>
 
-        <div class="col-md-6 mb-4">
-            <h1 class="fw-bold mb-2">{{ product.name }}</h1>
-            <p class="text-muted mb-3">Preces kods: <span class="badge bg-secondary">{{ product.uniqueCode }}</span></p>
-            
-            <div class="card p-4 shadow-sm bg-white mb-4">
-                <div class="d-flex justify-content-between align-items-center mb-3">
-                    <span class="fs-2 fw-bold text-primary">{{ product.price }} €</span>
-                    <span class="badge fs-6 {{ product.stock > 0 ? 'bg-success' : 'bg-danger' }}">
-                        {{ product.stock > 0 ? 'Ir noliktavā (' ~ product.stock ~ ')' : 'Nav pieejams' }}
-                    </span>
-                </div>
+        {# Правая колонка: Краткая инфо и Блок покупки #}
+        <div class="col-md-6 mb-4 d-flex flex-column justify-content-between">
+            <div>
+                <h1 class="fw-bold mb-2 text-dark">{{ product.name }}</h1>
+                <p class="text-muted mb-4">Preces kods: <span class="badge bg-light text-secondary border">{{ product.uniqueCode }}</span></p>
+                
+                {# Блок коммерции #}
+                <div class="card p-4 shadow-sm bg-white border-0 mb-4">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <span class="fs-1 fw-bold text-dark">{{ product.price }} €</span>
+                        <span class="badge fs-6 px-3 py-2 {{ product.stock > 0 ? 'bg-success-subtle text-success border border-success' : 'bg-danger-subtle text-danger border border-danger' }}">
+                            {{ product.stock > 0 ? 'Ir noliktavā (' ~ product.stock ~ ')' : 'Nav pieejams' }}
+                        </span>
+                    </div>
 
-                <a href="{{ path('app_cart_add', { id: product.id }) }}" class="btn btn-primary btn-lg w-100 {% if product.stock == 0 %}disabled{% endif %}">
-                     Ielikt grozā
-                </a>
+                    <a href="{{ path('app_cart_add', { id: product.id }) }}" class="btn btn-dark btn-lg w-100 py-3 fw-bold {% if product.stock == 0 %}disabled{% endif %}">
+                        <i class="fa fa-shopping-cart me-2"></i> Ielikt grozā
+                    </a>
+                </div>
             </div>
 
-            <h5>Apraksts un specifikācija</h5>
-            <div class="border rounded p-3 bg-white">
-                <p class="mb-0">{{ product.description|raw }}</p>
+            {# Короткое превью описания (если нужно), либо оставляем место под характеристики ниже #}
+        </div>
+    </div>
+
+    {# Вкладки / Подробная информация на всю ширину #}
+    <div class="row mb-5">
+        <div class="col-12">
+            <div class="card shadow-sm p-4 bg-white border-0">
+                <ul class="nav nav-tabs mb-4" id="productTab" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link active fw-bold" id="description-tab" data-bs-toggle="tab" data-bs-target="#description-pane" type="button" role="tab">Apraksts</button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link fw-bold" id="specs-tab" data-bs-toggle="tab" data-bs-target="#specs-pane" type="button" role="tab">Specifikācija</button>
+                    </li>
+                </ul>
+                
+                <div class="tab-content" id="productTabContent">
+                    {# Вкладка: Описание #}
+                    <div class="tab-pane fade show active text-secondary" id="description-pane" role="tabpanel" tabindex="0">
+                        <div class="lh-lg">{{ product.description|raw }}</div>
+                    </div>
+                    
+                    {# Вкладка: Спецификации #}
+                    <div class="tab-pane fade" id="specs-pane" role="tabpanel" tabindex="0">
+                        {% if product.attributes is not empty %}
+                            <div class="table-responsive" style="max-width: 800px;">
+                                <table class="table table-striped table-hover align-middle border">
+                                    <tbody>
+                                        {% for key, value in product.attributes %}
+                                            <tr>
+                                                <th class="bg-light text-muted fw-semibold w-50 ps-4" style="font-size: 0.95rem;">
+                                                    {{ key|replace({'_': ' '})|title }}
+                                                </th> 
+                                                <td class="fw-medium text-dark ps-4" style="font-size: 0.95rem;">{{ value }}</td>
+                                            </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        {% else %}
+                            <p class="text-muted mb-0">Šai precei nav norādīta papildus specifikācija.</p>
+                        {% endif %}
+                    </div>
+                </div>
             </div>
         </div>
     </div>
 
+    {# Отзывы и форма добавления #}
     <div class="row mt-5">
-        <div class="col-md-8">
-            <div class="card shadow-sm p-4 mb-4">
-                <h4 class="fw-bold mb-4">Klientu atsauksmes</h4>
+        {# Список отзывов #}
+        <div class="col-md-8 mb-4">
+            <div class="card shadow-sm p-4 bg-white border-0 h-100">
+                <h4 class="fw-bold mb-4 text-dark">Klientu atsauksmes</h4>
 
                 {% set approved_reviews = 0 %}
                 {% for review in product.reviews %}
@@ -52,7 +108,7 @@
                         {% set approved_reviews = approved_reviews + 1 %}
                         <div class="border-bottom pb-3 mb-3">
                             <div class="d-flex justify-content-between align-items-center mb-1">
-                                <strong>{{ review.user.firstName }} {{ review.user.lastName }}</strong>
+                                <strong class="text-dark">{{ review.user.firstName }} {{ review.user.lastName }}</strong>
                                 <span class="text-warning fs-5">
                                     {% for i in 1..5 %}
                                         {{ i <= review.rating ? '★' : '☆' }}
@@ -60,27 +116,29 @@
                                 </span>
                             </div>
                             <small class="text-muted d-block mb-2">{{ review.createdAt|date('d.m.Y H:i') }}</small>
-                            <p class="mb-0 bg-light p-3 rounded text-secondary">{{ review.description }}</p>
+                            <p class="mb-0 bg-light p-3 rounded text-secondary" style="font-size: 0.95rem;">{{ review.description }}</p>
                         </div>
                     {% endif %}
                 {% endfor %}
 
                 {% if approved_reviews == 0 %}
-                    <div class="alert alert-light text-center py-4 mb-0">
+                    <div class="alert alert-light text-center py-5 mb-0 border-0 bg-light">
+                        <i class="fa fa-comments fa-2x text-muted mb-2"></i>
                         <p class="text-muted mb-0">Šai precei vēl nav pievienotu atsauksmju. Esiet pirmais!</p>
                     </div>
                 {% endif %}
             </div>
         </div>
 
-        <div class="col-md-4">
-            <div class="card shadow-sm p-4 position-sticky" style="top: 20px;">
-                <h5 class="fw-bold mb-3">Pievienot atsauksmi</h5>
+        {# Форма написания отзыва #}
+        <div class="col-md-4 mb-4">
+            <div class="card shadow-sm p-4 position-sticky bg-white border-0" style="top: 20px;">
+                <h5 class="fw-bold mb-3 text-dark">Pievienot atsauksmi</h5>
                 
                 {% if app.user %}
                     <form action="{{ path('app_product_review_add', { id: product.id }) }}" method="post">
                         <div class="mb-3">
-                            <label class="form-label small fw-bold">Jūsu vērtējums</label>
+                            <label class="form-label small fw-bold text-muted">Jūsu vērtējums</label>
                             <select name="vertejums" class="form-select" required>
                                 <option value="">Izvēlieties vērtējumu...</option>
                                 <option value="5">5 ★★★★★ (Izcili)</option>
@@ -91,15 +149,15 @@
                             </select>
                         </div>
                         <div class="mb-3">
-                            <label class="form-label small fw-bold">Komentārs</label>
+                            <label class="form-label small fw-bold text-muted">Komentārs</label>
                             <textarea name="apraksts" class="form-control" rows="4" placeholder="Uzrakstiet savu pieredzi..." required></textarea>
                         </div>
-                        <button type="submit" class="btn btn-outline-primary w-100">Iesniegt atsauksmi</button>
+                        <button type="submit" class="btn btn-outline-primary w-100 fw-bold">Iesniegt atsauksmi</button>
                     </form>
                 {% else %}
-                    <div class="text-center py-3">
-                        <p class="text-muted small">Tikai reģistrēti lietotāji var atstāt atsauksmes.</p>
-                        <a href="/login" class="btn btn-sm btn-primary px-4">Ienākt sistēmā</a>
+                    <div class="text-center py-4 bg-light rounded">
+                        <p class="text-muted small mb-3">Tikai reģistrēti lietotāji var atstāt atsauksmes.</p>
+                        <a href="/login" class="btn btn-sm btn-primary px-4 fw-bold">Ienākt sistēmā</a>
                     </div>
                 {% endif %}
             </div>

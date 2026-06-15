@@ -9,13 +9,16 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
+use Knp\Component\Pager\PaginatorInterface;
+
 
 class CatalogController extends AbstractController
 {
     #[Route('/', name: 'app_catalog')]
-    public function index(Request $request, ProductRepository $productRepository, CategoryRepository $categoryRepository): Response
+    public function index(Request $request, ProductRepository $productRepository, CategoryRepository $categoryRepository, PaginatorInterface $paginator): Response
     {
         $categoryCode = $request->query->get('category');
+        $searchQuery = $request->query->get('q', ''); 
         
         
         $filters = $request->query->all();
@@ -23,14 +26,29 @@ class CatalogController extends AbstractController
         
         $filters = array_filter($filters);
 
+
+        if (!empty($searchQuery)) {
+            $productsData = $productRepository->searchByQuery($searchQuery);
+        } else {
+            // Если поиска нет, отдаем обычный список по категориям и фильтрам
+            $productsData = $productRepository->findByFilters($categoryCode, $filters);
+        }
+        // pagination
+        $pagination=$paginator->paginate(
+            $productsData,
+            $request->query->getInt('page', 1),
+            12
+
+        );
+
         return $this->render('catalog/index.html.twig', [
-            'products' => $productRepository->findByFilters($categoryCode, $filters),
+            'products' => $pagination, 
             'categories' => $categoryRepository->findAll(),
             'currentCategory' => $categoryCode,
             'currentFilters' => $filters,
+            'searchQuery' => $searchQuery, 
         ]);
     }
-
 
     #[Route('/product/{id}', name: 'app_product_show', methods: ['GET'])]
     public function show(int $id, ProductRepository $productRepository): Response

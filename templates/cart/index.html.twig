@@ -74,7 +74,6 @@
 
                         <div class="mb-3">
                             <label class="form-label">Piegādes veids</label>
-                            {# ИСПРАВЛЕНО: Добавлен onchange атрибут для мгновенной реакции скрипта #}
                             <select id="delivery-method" name="delivery_method" class="form-select" required onchange="handleDeliveryChange(this)">
                                 <option value="">Izvēlieties piegādātāju...</option>
                                 <option value="store">Saņemt veikalā (Bezmaksas)</option>
@@ -83,7 +82,6 @@
                             </select>
                         </div>
 
-                        {# Блок адреса скрыт по умолчанию #}
                         <div class="mb-3" id="address-container" style="display: none;">
                             <label class="form-label" id="address-label">Atrašanās vieta</label>
                             <select id="delivery-address" name="delivery_address" class="form-select">
@@ -125,7 +123,6 @@
         deliveryAddress.innerHTML = '<option value="">Ielādē adreses...</option>';
 
         if (provider === 'omniva') {
-            // Запрос всех пакоматов Omniva в Латвии
             fetch('https://www.omniva.lv/locations.json')
                 .then(response => response.json())
                 .then(data => {
@@ -143,16 +140,13 @@
                 });
 
         } else if (provider === 'dpd') {
-            // Запрос всех пунктов DPD в Латвии (официальный CSV файл)
             fetch('https://support.dpd.lv/pickup-punti-csv.php')
                 .then(response => response.text())
                 .then(text => {
-                    // Разбиваем CSV по строкам
                     const lines = text.split('\n');
                     let html = '<option value="">Izvēlieties DPD punktu...</option>';
                     
                     lines.forEach((line, index) => {
-                        // Пропускаем заголовок таблицы и пустые строки
                         if (index === 0 || !line.trim()) return;
                         
                         // Парсим строку CSV (разделение по запятой или точке с запятой)

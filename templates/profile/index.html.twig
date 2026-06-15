@@ -36,7 +36,6 @@
                                             <div>
                                                 <span class="fs-6 fw-bold text-primary me-3">{{ order.totalPrice }} €</span>
                                                 
-                                                {# ИСПРАВЛЕННЫЙ SPAN НИЖЕ #}
                                                 <span class="badge 
                                                     {% if order.status.value == 'new' %}bg-warning text-dark
                                                     {% elseif order.status.value == 'completed' %}bg-success

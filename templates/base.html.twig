@@ -25,7 +25,13 @@
 
         <nav class="navbar navbar-expand-lg navbar-dark bg-dark mb-4">
             <div class="container">
-                <a class="navbar-brand fw-bold" href="{{ path('app_catalog') }}">EPCLONE</a>
+                <a class="navbar-brand fw-bold d-flex align-items-center gap-2" href="{{ path('app_catalog') }}">
+                    <!-- Сам логотип -->
+                    <img 
+                        src="{{ asset('uploads/images/Cpu1.png') }}" 
+                        alt="EPCLONE Logo" 
+                        style="height: 130px; width: auto; object-fit: contain; margin-top: -30px; margin-bottom: -30px;"
+                    >
                 <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
                     <span class="navbar-toggler-icon"></span>
                 </button>
@@ -33,7 +39,7 @@
                     <div class="navbar-nav ms-auto align-items-center">
                     {% if app.user %}
                             <div class="nav-item">
-                                <a class="nav-link text-warning" href="{{ path('app_profile') }}">Mans profils</a>
+                                <a class="nav-link text-white" href="{{ path('app_profile') }}">Mans profils</a>
                             </div>
                         {% else %}
                             <div class="nav-item">

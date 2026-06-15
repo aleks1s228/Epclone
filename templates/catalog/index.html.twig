@@ -4,7 +4,6 @@
 
 {% block body %}
 <div class="container mt-4">
-    {# Блок для вывода уведомлений #}
     {% for label, messages in app.flashes %}
         {% for message in messages %}
             <div class="alert alert-{{ label }} alert-dismissible fade show" role="alert">
@@ -14,7 +13,21 @@
         {% endfor %}
     {% endfor %}
 
-    <h1 class="mb-4 fw-bold">Produktu katalogs</h1>
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="fw-bold m-0">Produktu katalogs</h1> 
+
+        <form action="{{ path('app_catalog') }}" method="GET" class="d-flex gap-2" style="max-width: 400px; width: 100%;">
+            <input 
+                type="text" 
+                name="q" 
+                value="{{ searchQuery ?? '' }}" 
+                class="form-control"
+                placeholder="Meklēt preci..."
+                required
+            >
+            <button type="submit" class="btn btn-primary">Atrast</button>
+        </form>
+    </div>
 
     <div class="row">
         
@@ -26,7 +39,6 @@
                         Visas preces
                     </a>
                     {% for category in categories %}
-                        {# Используем точные свойства .code и .name из сущности Category #}
                         <a href="{{ path('app_catalog', {'category': category.code}) }}" class="list-group-item list-group-item-action {% if currentCategory == category.code %}active{% endif %}">
                             {{ category.name }}
                         </a>
@@ -78,6 +90,9 @@
                         </div>
                     </div>
                 {% endfor %}
+            </div>
+            <div class="d-flex justify-content-center mt-4">
+                 {{ knp_pagination_render(products) }}
             </div>
         </div>
 

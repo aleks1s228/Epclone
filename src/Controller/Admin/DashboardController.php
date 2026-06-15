@@ -1,8 +1,6 @@
 <?php
 
 namespace App\Controller\Admin;
-
-// Импортируем только контроллеры, как у тебя и было изначально
 use App\Controller\Admin\ProductCrudController;
 use App\Controller\Admin\CategoryCrudController;
 use App\Controller\Admin\ReviewCrudController;
@@ -28,7 +26,7 @@ class DashboardController extends AbstractDashboardController
 
     public function index(): Response
     {
-        // Генерируем ссылку на список товаров с явным указанием экшена index
+        // Ģenerēt saiti uz produktu sarakstu ar skaidru indeksēšanas darbību
         $url = $this->adminUrlGenerator
             ->setController(ProductCrudController::class)
             ->setAction('index') 
@@ -49,8 +47,7 @@ class DashboardController extends AbstractDashboardController
 
         yield MenuItem::section('E-komercija');
         
-        // Генерируем полноценные CRUD ссылки через встроенный генератор урлов,
-        // чтобы шаблон меню не ломался, а кнопки добавления появились.
+        // Ģenerē CRUD saites, izmantojot iebūvēto URL ģeneratoru,
         
         $productUrl = $this->adminUrlGenerator
             ->setController(ProductCrudController::class)

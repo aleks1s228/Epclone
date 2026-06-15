@@ -53,6 +53,7 @@ class CartController extends AbstractController
         $session->set('cart', $cart);
 
         $this->addFlash('success', 'Prece pievienota grozam!');
+        
         return $this->redirectToRoute('app_catalog');
     }
 

@@ -25,14 +25,14 @@ class ReviewCrudController extends AbstractCrudController
         return $crud
             ->setEntityLabelInSingular('Atsauksme')
             ->setEntityLabelInPlural('Atsauksmes')
-            ->setDefaultSort(['createdAt' => 'DESC']); // Новые отзывы будут сверху
+            ->setDefaultSort(['createdAt' => 'DESC']); 
     }
 
     public function configureFields(string $pageName): iterable
         {
             yield IdField::new('id')->hideOnForm();
             
-            // Стандартные поля связи без автокомплита (будет красивый стандартный селектор)
+
             yield AssociationField::new('product', 'Prece')
                 ->setRequired(true);
                 

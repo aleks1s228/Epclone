@@ -42,12 +42,23 @@ class ProductRepository extends ServiceEntityRepository
     //        ;
     //    }
     /**
-     * Фильтрация товаров по категории и JSON-аттрибутам
+     * Фильтрация 
      */
-public function findByFilters(?string $categoryCode, array $filters = []): array
+    public function searchByQuery(string $query): mixed
+    {
+        return $this->createQueryBuilder('p')
+            ->where('p.name LIKE :query')
+            ->orWhere('p.uniqueCode LIKE :query')
+            ->setParameter('query', '%' . $query . '%')
+            ->orderBy('p.id', 'DESC')
+            ->getQuery();
+    }
+
+    public function findByFilters(?string $categoryCode, array $filters = []): array
     {
         $qb = $this->createQueryBuilder('p')
-            ->leftJoin('p.category', 'c');
+            ->leftJoin('p.category', 'c')
+            ->orderBy('p.id', 'DESC');
 
         if ($categoryCode) {
             $qb->andWhere('c.code = :categoryCode')
@@ -57,24 +68,22 @@ public function findByFilters(?string $categoryCode, array $filters = []): array
         $products = $qb->getQuery()->getResult();
 
         if (empty($filters)) {
-            return $products;
+            return array_values($products);
         }
 
-        return array_filter($products, function(Product $product) use ($filters) {
+        // ТВОЙ РОДНОЙ БЛОК ФИЛЬТРАЦИИ БЕЗ ИЗМЕНЕНИЙ:
+        $filteredProducts = array_filter($products, function(Product $product) use ($filters) {
             $prodAttrs = $product->getAttributes() ?? [];
             
             foreach ($filters as $key => $value) {
-                if (empty($value)) {
+                if (empty($value) || $key === 'page') {
                     continue;
                 }
                 
-                // Проверяем: если это ассоциативный массив (ключ => значение)
                 if (isset($prodAttrs[$key]) && $prodAttrs[$key] === $value) {
                     continue;
                 }
                 
-                // Если EasyAdmin сохранил просто как список строк (например, ["AM5", "120W"])
-                // Ищем вхождение строки во всем массиве атрибутов
                 $found = false;
                 foreach ($prodAttrs as $attrValue) {
                     if (is_string($attrValue) && str_contains($attrValue, $value)) {
@@ -89,5 +98,6 @@ public function findByFilters(?string $categoryCode, array $filters = []): array
             }
             return true;
         });
+    return array_values($filteredProducts);
     }
 }

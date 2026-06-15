@@ -15,6 +15,9 @@ use EasyCorp\Bundle\EasyAdminBundle\Field\TextField;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Action;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Actions;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Crud;
+use EasyCorp\Bundle\EasyAdminBundle\Field\CodeEditorField;
+use Symfony\Component\Form\CallbackTransformer;
+
 
 class ProductCrudController extends AbstractCrudController
 {
@@ -26,54 +29,71 @@ class ProductCrudController extends AbstractCrudController
     public function configureActions(Actions $actions): Actions
         {
             return $actions
-                // Обновляем параметры уже существующего встроенного действия создания товара
+                // atjauno paramtetrus
                 ->update(Crud::PAGE_INDEX, Action::NEW, function (Action $action) {
                     return $action
-                        ->setLabel('Pievienot preci (Add Product)') // Текст кнопки
-                        ->setIcon('fa fa-plus')                     // Иконка
-                        ->setCssClass('btn btn-primary');           // Стиль синей кнопки Bootstrap
+                        ->setLabel('Pievienot preci (Add Product)') // Text
+                        ->setIcon('fa fa-plus')                     // Icon
+                        ->setCssClass('btn btn-primary');           // Bootstrap
                 })
                 
-                // На странице редактирования возвращаем кнопку возврата к списку
+                
                 ->add(Crud::PAGE_EDIT, Action::INDEX);
         }
     public function configureFields(string $pageName): iterable
     {
+        $attributesField = CodeEditorField::new('attributes', 'Specifikācijas (JSON)')
+            ->setLanguage('javascript')
+            ->setHelp('Piemērs: {"cores": "6", "socket": "AM5"}')
+            ->hideOnIndex();
+
+        $attributesField->setFormTypeOption('getter', function (Product $product, $form): string {
+            $arrayValue = $product->getAttributes();
+            if (empty($arrayValue)) {
+                return "{\n  \n}";
+            }
+            return json_encode($arrayValue, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
+        });
+
+        $attributesField->setFormTypeOption('setter', function (Product $product, ?string $stringValue, $form): void {
+            if (empty($stringValue)) {
+                $product->setAttributes([]);
+                return;
+            }
+            $decoded = json_decode($stringValue, true);
+            $product->setAttributes(is_array($decoded) ? $decoded : []);
+        });
         return [
-            // 1. Системный ID (скрыт в форме создания)
+            //   ID 
             IdField::new('id')->hideOnForm(),
 
-            // 2. Основная информация о железе
+            //  info
             TextField::new('name', 'Preces nosaukums (Name)'),
             
             TextField::new('uniqueCode', 'Unikālais kods (Part Number / SKU)'),
             
             TextEditorField::new('description', 'Apraksts (Description)'),
 
-            // 3. Категория (Связь ManyToOne)
+            // 3. Kategorija
             AssociationField::new('category', 'Kategorija (Category)'),
 
-            // 4. Коммерческие данные
+            // 4. cena
             MoneyField::new('price', 'Cena (Price)')
                 ->setCurrency('EUR')
-                ->setStoredAsCents(false), // Так как в БД тип DECIMAL(10,2), а не центы в Integer
+                ->setStoredAsCents(false), 
                 
             IntegerField::new('stock', 'Skaits noliktavā (Stock)'),
 
-            // 5. Изображения и медиа-ресурсы
-            // Для главного изображения используем ImageField. Файлы будут загружаться в public/uploads/images
+            // 5. attaels
             ImageField::new('image', 'Galvenais attēls (Main Image)')
                 ->setBasePath('uploads/images')
                 ->setUploadDir('public/uploads/images')
                 ->setUploadedFileNamePattern('[randomhash].[extension]')
                 ->setRequired(false),
-
-            // Поле media типа TEXT (может использоваться для ссылок на видео/инструкции или дополнительные пути)
+ 
             TextField::new('media', 'Papildus media (Media links/paths)'),
 
-            // 6. Спецификации железа (Тип array в PostgreSQL/MySQL)
-            // Позволяет добавлять кастомные характеристики комплектующих (например: Сокет, TDP, Частота)
-            ArrayField::new('attributes', 'Specifikācijas / Atribūti (Attributes)'),
+            $attributesField,
         ];
     }
 }
