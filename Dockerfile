@@ -1,5 +1,5 @@
 # Шаг 1: Используем официальный образ PHP с установленным Apache
-FROM php:8.2-apache
+FROM php:8.4-apache
 
 # Шаг 2: Устанавливаем системные пакеты и необходимые для Symfony расширения (инструменты для ZIP, intl для латышского языка и PDO для БД)
 RUN apt-get update && apt-get install -y \
