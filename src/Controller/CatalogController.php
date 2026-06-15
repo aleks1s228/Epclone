@@ -69,4 +69,34 @@ class CatalogController extends AbstractController
     {
         return $this->render('catalog/contacts.html.twig');
     }
+    public function createAdmin(
+    EntityManagerInterface $em, 
+    UserPasswordHasherInterface $passwordHasher
+): Response {
+    // Проверяем, может админ уже есть, чтобы не дублировать
+    $existingUser = $em->getRepository(User::class)->findOneBy(['email' => 'alex.krastins2006@gmail.com']);
+    
+    if ($existingUser) {
+        return new Response('Пользователь с email admin@epclone.com уже существует!');
+    }
+
+    $user = new User();
+    $user->setEmail('alex.krastins2006@gmail.com'); // Твой логин для админки
+    $user->setFirstName('Alex');
+    $user->setLastName('Admin');
+    $user->setPhone('+37120525125');
+    $user->setVerified(true); // или is_verified в зависимости от твоего геттера/сеттера
+
+    // Хешируем пароль "admin123"
+    $hashedPassword = $passwordHasher->hashPassword($user, 'SmArtHX7QrWbf6a'); // Твой пароль
+    $user->setPassword($hashedPassword);
+
+    // Самое главное — даем права суперпользователя
+    $user->setRoles(['ROLE_ADMIN']);
+
+    $em->persist($user);
+    $em->flush();
+
+    return new Response('Админ успешно создан!Срочно удали этот роут из кода после проверки!');
+}
 }
