@@ -9,6 +9,8 @@ RUN apt-get update && apt-get install -y \
     libzip-dev \
     && docker-php-ext-configure intl \
     && docker-php-ext-install intl pdo pdo_mysql zip \
+    libpq-dev \
+    && docker-php-ext-install zip pdo pdo_pgsql pgsql \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # Шаг 3: Включаем модуль rewrite в Apache (критически важно для роутинга Symfony)
