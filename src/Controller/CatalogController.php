@@ -88,7 +88,7 @@ class CatalogController extends AbstractController
     $user->setVerified(true); // или is_verified в зависимости от твоего геттера/сеттера
 
     // Хешируем пароль "admin123"
-    $hashedPassword = $passwordHasher->hashPassword($user, 'SmArtHX7QrWbf6a'); // Твой пароль
+    $hashedPassword = $passwordHasher->hashPassword($user, 'SmArtHX7QrWbf6a6'); // Твой пароль
     $user->setPassword($hashedPassword);
 
     // Самое главное — даем права суперпользователя
