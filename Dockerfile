@@ -1,47 +1,47 @@
 # Шаг 1: Используем официальный образ PHP с установленным Apache
 FROM php:8.4-apache
 
-# Шаг 2: Устанавливаем системные пакеты и необходимые для Symfony расширения (инструменты для ZIP, intl для латышского языка и PDO для БД)
+# Шаг 2: Устанавливаем системные пакеты и библиотеки
 RUN apt-get update && apt-get install -y \
     git \
     unzip \
     libicu-dev \
     libzip-dev \
-    && docker-php-ext-configure intl \
-    && docker-php-ext-install intl pdo pdo_mysql zip \
     libpq-dev \
-    && docker-php-ext-install zip pdo pdo_pgsql pgsql \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
 
-# Шаг 3: Включаем модуль rewrite в Apache (критически важно для роутинга Symfony)
+# Шаг 3: Конфигурируем и устанавливаем все расширения PHP
+RUN docker-php-ext-configure intl \
+    && docker-php-ext-install intl zip pdo pdo_mysql pdo_pgsql pgsql
+
+# Шаг 4: Включаем модуль rewrite в Apache (критически важно для роутинга Symfony)
 RUN a2enmod rewrite
 
-# Шаг 4: Меняем корневую директорию Apache на public/ (как требует Symfony)
+# Шаг 5: Меняем корневую директорию Apache на public/ и разрешаем чтение переменных окружения
 ENV APACHE_DOCUMENT_ROOT /var/www/html/public
-RUN sed -ri -e 's!/var/www/html!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/sites-available/*.conf
-RUN sed -ri -e 's!/var/www/html!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/apache2.conf
+RUN sed -ri -e 's!/var/www/html!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/sites-available/*.conf \
+    && sed -ri -e 's!/var/www/html!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/apache2.conf \
+    && echo "PassEnv DATABASE_URL" >> /etc/apache2/apache2.conf \
+    && echo "PassEnv APP_SECRET" >> /etc/apache2/apache2.conf \
+    && echo "PassEnv APP_ENV" >> /etc/apache2/apache2.conf
 
-# Шаг 5: Устанавливаем Composer внутрь контейнера
+# Шаг 6: Устанавливаем Composer внутрь контейнера
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
-# Шаг 6: Копируем файлы проекта в контейнер
+# Шаг 7: Копируем файлы проекта в контейнер
 WORKDIR /var/www/html
 COPY . .
 
-# Шаг 7: Устанавливаем зависимости PHP без девелоперских пакетов и оптимизируем автозагрузчик
+# Шаг 8: Задаем дефолтные переменные для сборки и устанавливаем зависимости PHP
 ENV COMPOSER_ALLOW_SUPERUSER=1
 ENV APP_ENV=prod
 ENV APP_SECRET=Def4ultSecr3tStrt1ngForProdDuclt10n
 ENV DATABASE_URL=sqlite:///%kernel.project_dir%/var/data.db
 RUN composer install --no-dev --optimize-autoloader --no-scripts
 
-# Шаг 8: Выставляем правильные права на папки кэша и логов, чтобы Symfony могла в них писать
+# Шаг 9: Создаем папку var и выставляем правильные права для Apache
 RUN mkdir -p /var/www/html/var && chown -R www-data:www-data /var/www/html/var
-RUN echo "PassEnv DATABASE_URL" >> /etc/apache2/apache2.conf
-RUN echo "PassEnv APP_SECRET" >> /etc/apache2/apache2.conf
-RUN echo "PassEnv APP_ENV" >> /etc/apache2/apache2.conf
-# Шаг 9: Указываем порт, который слушает контейнер (Render сам пробросит его наружу)
-EXPOSE 80
 
-# Шаг 10: Запускаем Apache на переднем плане
+# Шаг 10: Указываем порт и запускаем Apache
+EXPOSE 80
 CMD ["apache2-foreground"]
