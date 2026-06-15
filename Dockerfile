@@ -32,7 +32,7 @@ ENV APP_ENV=prod
 RUN composer install --no-dev --optimize-autoloader --no-scripts
 
 # Шаг 8: Выставляем правильные права на папки кэша и логов, чтобы Symfony могла в них писать
-RUN chown -R www-data:www-data /var/www/html/var
+RUN mkdir -p /var/www/html/var && chown -R www-data:www-data /var/www/html/var
 
 # Шаг 9: Указываем порт, который слушает контейнер (Render сам пробросит его наружу)
 EXPOSE 80
