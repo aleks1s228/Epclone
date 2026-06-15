@@ -21,6 +21,7 @@ RUN a2enmod rewrite
 ENV APACHE_DOCUMENT_ROOT /var/www/html/public
 RUN sed -ri -e 's!/var/www/html!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/sites-available/*.conf \
     && sed -ri -e 's!/var/www/html!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/apache2.conf \
+    && sed -i '/<Directory ${APACHE_DOCUMENT_ROOT}>/,/<\/Directory>/s/AllowOverride None/AllowOverride All/' /etc/apache2/apache2.conf \
     && echo "PassEnv DATABASE_URL" >> /etc/apache2/apache2.conf \
     && echo "PassEnv APP_SECRET" >> /etc/apache2/apache2.conf \
     && echo "PassEnv APP_ENV" >> /etc/apache2/apache2.conf
