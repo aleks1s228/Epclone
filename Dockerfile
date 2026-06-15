@@ -44,4 +44,4 @@ RUN mkdir -p /var/www/html/var && chown -R www-data:www-data /var/www/html/var
 
 # Шаг 10: Указываем порт и запускаем Apache
 EXPOSE 80
-CMD ["apache2-foreground"]
+CMD php bin/console doctrine:migrations:migrate --no-interaction && apache2-foreground
